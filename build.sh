@@ -10,5 +10,3 @@ pushd build
 conan install .. --build=missing
 cmake .. -DCMAKE_BUILD_TYPE=Release -G Ninja
 cmake --build .
-
-bin/main

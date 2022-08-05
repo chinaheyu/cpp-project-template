@@ -1,0 +1,104 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-on-ubuntu:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Get Conan and Ninja
+      run: |
+        pip3 install wheel setuptools
+        pip3 install conan --upgrade
+        pip3 install ninja --upgrade
+
+    - name: Build project
+      run: ./build.sh
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifact_ubuntu
+        path: build/bin/*
+
+  build-on-windows:
+
+    runs-on: windows-latest
+
+    steps:
+
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Get Conan and Ninja
+      run: |
+        pip3 install wheel setuptools
+        pip3 install conan --upgrade
+
+    - name: Build project
+      run: .\build.bat
+      env:
+        CMAKE_GENERATOR: "Visual Studio 17 2022"
+        CMAKE_GENERATOR_PLATFORM: x64
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifact_windows
+        path: build/bin/*
+
+  build-on-macos:
+
+    runs-on: macos-latest
+
+    steps:
+
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Get Conan and Ninja
+      run: |
+        pip3 install wheel setuptools
+        pip3 install conan --upgrade
+        pip3 install ninja --upgrade
+
+    - name: Build project
+      run: ./build.sh
+    
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: artifact_macos
+        path: build/bin/*
+  
+  test-ubuntu:
+    needs: build-on-ubuntu
+    uses: ./.github/workflows/run-the-executable.yml
+    with:
+      artifact-name: artifact_ubuntu
+      os-name: ubuntu-latest
+      executable-name: main
+
+  test-windows:
+    needs: build-on-windows
+    uses: ./.github/workflows/run-the-executable.yml
+    with:
+      artifact-name: artifact_windows
+      os-name: windows-latest
+      executable-name: main.exe
+  
+  test-macos:
+    needs: build-on-macos
+    uses: ./.github/workflows/run-the-executable.yml
+    with:
+      artifact-name: artifact_macos
+      os-name: macos-latest
+      executable-name: main

@@ -1,0 +1,37 @@
+name: Run the executable
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        required: true
+        type: string
+      os-name:
+        required: true
+        type: string
+      executable-name:
+        required: true
+        type: string
+
+jobs:
+  run-executable:
+
+    runs-on: ${{ inputs.os-name }}
+
+    steps:
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artifact-name }}
+
+      - name: Run ${{ inputs.artifact-name }} in ${{ inputs.os-name }}
+        if: ${{ !startsWith(inputs.os-name, 'windows') }}
+        run: |
+          chmod +x ${{ inputs.executable-name }}
+          ./${{ inputs.executable-name }}
+
+      - name: Run ${{ inputs.artifact-name }} in ${{ inputs.os-name }}
+        if: ${{ startsWith(inputs.os-name, 'windows') }}
+        run:
+          .\${{ inputs.executable-name }}
